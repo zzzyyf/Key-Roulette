@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Play, Pause, RotateCcw, Plus, Minus, Settings2, Dices, Music, ChevronDown, Check, Languages, Sun, Moon } from 'lucide-react';
+import { Play, Pause, RotateCcw, Plus, Minus, Settings2, Dices, Music, ChevronDown, Check, Languages, Sun, Moon, Piano } from 'lucide-react';
+import { useMidi } from './hooks/useMidi';
 
 const MAJORS = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
 const MINORS = ['Cm', 'C#m', 'Dm', 'Ebm', 'Em', 'Fm', 'F#m', 'Gm', 'Abm', 'Am', 'Bbm', 'Bm'];
@@ -27,7 +28,9 @@ const TRANSLATIONS = {
     reset: 'RESET',
     preparing: 'Preparing',
     timeSig: '4/4 Time Signature',
-    precision: 'Precision Quartz Timing'
+    precision: 'Precision Quartz Timing',
+    midi: 'MIDI Input',
+    noChord: 'n.c.'
   },
   zh: {
     title: '轮盘调',
@@ -46,7 +49,9 @@ const TRANSLATIONS = {
     reset: '重置',
     preparing: '预备中',
     timeSig: '4/4 拍号',
-    precision: '石英级精准计时'
+    precision: '石英级精准计时',
+    midi: 'MIDI 输入',
+    noChord: 'n.c.'
   }
 };
 
@@ -65,6 +70,9 @@ export default function App() {
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [isPrepMeasure, setIsPrepMeasure] = useState(false);
+  const [midiEnabled, setMidiEnabled] = useState(false);
+  
+  const { detectedChord, chordRelation, chordColorClass, chordLedColor } = useMidi(midiEnabled, currentKey, theme);
   
   const audioContextRef = useRef<AudioContext | null>(null);
   const timerIDRef = useRef<number | null>(null);
@@ -319,6 +327,22 @@ export default function App() {
           </div>
           
           <div className="flex items-center gap-3">
+            {/* MIDI Switcher */}
+            <button 
+              onClick={() => setMidiEnabled(!midiEnabled)}
+              className={`p-2 rounded-xl border transition-all duration-300 flex items-center gap-2 ${
+                midiEnabled 
+                  ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400' 
+                  : theme === 'dark' 
+                    ? 'bg-white/5 border-white/10 hover:bg-white/10 text-white/60' 
+                    : 'bg-slate-200 border-slate-300 hover:bg-slate-300 text-slate-600'
+              }`}
+              title={t.midi}
+            >
+              <Piano className="w-4 h-4" />
+              {midiEnabled && <span className="text-[10px] font-mono font-bold uppercase tracking-wider">ON</span>}
+            </button>
+
             {/* Theme Switcher */}
             <button 
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -477,11 +501,30 @@ export default function App() {
                   {t.preparing}
                 </motion.span>
               )}
-              <span className={`text-[120px] sm:text-[180px] font-bold tracking-tighter leading-none transition-all duration-500 ${
-                isPrepMeasure ? 'opacity-20' : 'opacity-100'
-              } ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                {currentKey}
-              </span>
+              <div className="relative">
+                <span className={`text-[120px] sm:text-[180px] font-bold tracking-tighter leading-none transition-all duration-500 ${
+                  isPrepMeasure ? 'opacity-20' : 'opacity-100'
+                } ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                  {currentKey}
+                </span>
+                
+                {/* MIDI Status LED (Top Right of Text) */}
+                {midiEnabled && (
+                  <div className="absolute -top-2 -right-6 sm:-right-8">
+                    <motion.div
+                      animate={{ 
+                        backgroundColor: chordLedColor,
+                        boxShadow: chordRelation !== 'none' ? `0 0 15px ${chordLedColor}` : 'none',
+                        scale: chordRelation !== 'none' ? [1, 1.2, 1] : 1
+                      }}
+                      transition={{ 
+                        scale: { repeat: chordRelation !== 'none' ? Infinity : 0, duration: 2 }
+                      }}
+                      className="w-4 h-4 rounded-full border border-white/10"
+                    />
+                  </div>
+                )}
+              </div>
             </motion.div>
           </AnimatePresence>
 
@@ -520,6 +563,27 @@ export default function App() {
               />
             ))}
           </div>
+
+          {/* MIDI Chord Display */}
+          {midiEnabled && (
+            <div className="absolute bottom-6 right-8 text-right">
+              <AnimatePresence mode="wait">
+                {detectedChord && (
+                  <motion.div
+                    key={detectedChord}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    className="flex flex-col items-end"
+                  >
+                    <span className={`text-2xl font-mono font-bold tracking-tight ${chordColorClass}`}>
+                      {detectedChord === 'n.c.' ? t.noChord : detectedChord}
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
         </div>
 
         {/* Controls Grid */}
