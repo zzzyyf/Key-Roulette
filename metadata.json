@@ -1,0 +1,5 @@
+{
+  "name": "Key Roulette",
+  "description": "A tempo-adjustable 4/4 metronome that cycles through random musical keys every few measures.",
+  "requestFramePermissions": []
+}
