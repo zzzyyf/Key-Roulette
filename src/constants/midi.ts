@@ -11,4 +11,5 @@ export const CHORD_PATTERNS = {
   'm7b5': [0, 3, 6, 10], // Half-diminished
   'sus4': [0, 5, 7],     // Sus4
   'sus2': [0, 2, 7],     // Sus2
+  '5': [0, 7],           // Power Chord
 };

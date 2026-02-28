@@ -13,7 +13,7 @@ type Theme = 'light' | 'dark';
 const TRANSLATIONS = {
   en: {
     title: 'KEY ROULETTE',
-    subtitle: 'Metronome Tool v1.3',
+    subtitle: 'Metronome Tool v1.4',
     all: 'All Keys',
     majors: 'Majors',
     minors: 'Minors',
@@ -34,7 +34,7 @@ const TRANSLATIONS = {
   },
   zh: {
     title: '轮盘调',
-    subtitle: '节拍器工具 v1.3',
+    subtitle: '节拍器工具 v1.4',
     all: '所有调性',
     majors: '大调',
     minors: '小调',

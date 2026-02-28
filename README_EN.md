@@ -2,6 +2,17 @@
 
 Key Roulette is a professional metronome tool designed for musicians to practice randomized key changes. This guide explains how to host the application on your own Linux server.
 
+## Features
+- **Tempo Adjustable Metronome**: 40-240 BPM.
+- **Random Key Rotation**: Change keys every X measures.
+- **MIDI Input Support**: Connect MIDI devices for real-time chord analysis.
+- **Real-time Chord Detection**: Automatically identifies Major, Minor, Dim, Aug, 7th, and Power chords (C5, D5, etc.).
+- **Harmonic Analysis**: Visual LED and color indicators for Tonic and Diatonic chord relationships.
+- **Key Categories**: Practice Majors, Minors, or All keys.
+- **Prep Bar**: Optional lead-in measure for preparation.
+- **Dual Theme**: Daylight and Night modes.
+- **Multilingual**: Supports English and Simplified Chinese.
+
 ## Prerequisites
 
 - **Node.js**: Version 18.0.0 or higher.
@@ -84,14 +95,6 @@ You can customize the port by setting the `PORT` environment variable:
 ```bash
 PORT=8080 npm start
 ```
-
-## Features
-- **Tempo Adjustable Metronome**: 40-240 BPM.
-- **Random Key Rotation**: Change keys every X measures.
-- **Key Categories**: Practice Majors, Minors, or All keys.
-- **Prep Bar**: Optional lead-in measure for preparation.
-- **Dual Theme**: Daylight and Night modes.
-- **Multilingual**: Supports English and Simplified Chinese.
 
 ---
 Crafted for musicians. Happy practicing!

@@ -60,20 +60,29 @@ export function useMidi(midiEnabled: boolean, currentKey: string, theme: 'light'
 
   // Chord Detection Logic
   useEffect(() => {
-    if (activeMidiNotes.size < 3) {
+    if (activeMidiNotes.size < 2) {
       setDetectedChord(activeMidiNotes.size === 0 ? null : 'n.c.');
       return;
     }
 
-    const notes = Array.from(activeMidiNotes);
+    const notes = Array.from(activeMidiNotes) as number[];
+    const bassNote = Math.min(...notes);
+    const bassPitch = bassNote % 12;
+    
     const pitches = notes.map((n: number) => n % 12);
     const uniquePitches = Array.from(new Set(pitches));
+    
+    // Put bass pitch first in candidates to prefer it as root
+    const otherPitches = uniquePitches.filter(p => p !== bassPitch).sort((a: number, b: number) => a - b);
+    const rootCandidates = [bassPitch, ...otherPitches];
+    
+    // For pattern matching, we still need the sorted unique pitch classes
     const pitchClasses = uniquePitches.sort((a: number, b: number) => a - b);
     
     let foundChord: string | null = null;
 
-    // Try each note as root
-    for (const root of pitchClasses) {
+    // Try each candidate as root
+    for (const root of rootCandidates) {
       const normalized = pitchClasses.map((p: number) => (p - root + 12) % 12).sort((a: number, b: number) => a - b);
       
       for (const [suffix, pattern] of Object.entries(CHORD_PATTERNS)) {
