@@ -40,6 +40,9 @@ sudo npm install -g pm2
 # 启动应用
 pm2 start server.js --name "key-roulette"
 
+# 如果需要更改端口（例如改为 8080）
+PORT=8080 pm2 start server.js --name "key-roulette"
+
 # 保存进程列表以便在重启时自动启动
 pm2 save
 pm2 startup

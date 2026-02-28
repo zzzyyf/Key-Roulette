@@ -40,6 +40,9 @@ sudo npm install -g pm2
 # Start the app
 pm2 start server.js --name "key-roulette"
 
+# If you need to change the port (e.g., to 8080)
+PORT=8080 pm2 start server.js --name "key-roulette"
+
 # Save the process list to restart on reboot
 pm2 save
 pm2 startup

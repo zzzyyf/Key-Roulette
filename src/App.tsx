@@ -115,14 +115,24 @@ export default function App() {
 
   // Handle category change
   useEffect(() => {
-    // If measure counter is not at the last bar, update next key immediately
-    // If it's the last bar, rotateKey will handle picking from the new category
-    if (currentMeasure < measuresToChange || isPrepMeasure) {
-      const newNext = pickNewNextKey(currentKey, keyCategory);
-      setNextKey(newNext);
-      nextKeyRef.current = newNext;
+    if (!isPlaying) {
+      const keys = getKeysByCategory(keyCategory);
+      const initialKey = keys[Math.floor(Math.random() * keys.length)];
+      const secondKey = pickNewNextKey(initialKey, keyCategory);
+      setCurrentKey(initialKey);
+      setNextKey(secondKey);
+      currentKeyRef.current = initialKey;
+      nextKeyRef.current = secondKey;
+    } else {
+      // If measure counter is not at the last bar, update next key immediately
+      // If it's the last bar, rotateKey will handle picking from the new category
+      if (currentMeasure < measuresToChange || isPrepMeasure) {
+        const newNext = pickNewNextKey(currentKey, keyCategory);
+        setNextKey(newNext);
+        nextKeyRef.current = newNext;
+      }
     }
-  }, [keyCategory, pickNewNextKey]);
+  }, [keyCategory, pickNewNextKey, isPlaying]);
 
   // Initial mount setup
   useEffect(() => {
@@ -131,6 +141,8 @@ export default function App() {
     const secondKey = pickNewNextKey(initialKey, keyCategory);
     setCurrentKey(initialKey);
     setNextKey(secondKey);
+    currentKeyRef.current = initialKey;
+    nextKeyRef.current = secondKey;
   }, []); // Only run once on mount
 
   const nextNote = () => {
