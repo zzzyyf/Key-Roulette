@@ -133,9 +133,9 @@ export function useMidi(midiEnabled: boolean, currentKey: string, theme: 'light'
   const chordRelation = getChordRelation(detectedChord, currentKey);
   
   const chordColorClass = 
-    chordRelation === 'tonic' ? 'text-emerald-400' :
-    chordRelation === 'diatonic' ? 'text-blue-400' :
-    'text-white/20';
+    chordRelation === 'tonic' ? (theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600') :
+    chordRelation === 'diatonic' ? (theme === 'dark' ? 'text-blue-400' : 'text-blue-600') :
+    (theme === 'dark' ? 'text-white/20' : 'text-slate-400/60');
 
   const chordLedColor = 
     chordRelation === 'tonic' ? '#34d399' :
