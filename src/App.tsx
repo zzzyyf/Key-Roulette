@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Play, Pause, RotateCcw, Plus, Minus, Settings2, Dices, Music, ChevronDown, Check, Languages, Sun, Moon, Piano } from 'lucide-react';
+import { Play, Pause, RotateCcw, Plus, Minus, Settings2, Dices, Music, ChevronDown, Check, Languages, Sun, Moon, Piano, Volume2, VolumeX } from 'lucide-react';
 import { useMidi } from './hooks/useMidi';
 
 const MAJORS = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
@@ -30,7 +30,8 @@ const TRANSLATIONS = {
     timeSig: '4/4 Time Signature',
     precision: 'Precision Quartz Timing',
     midi: 'MIDI Input',
-    noChord: 'n.c.'
+    noChord: 'n.c.',
+    metronomeSound: 'Metronome Sound'
   },
   zh: {
     title: '轮盘调',
@@ -51,7 +52,8 @@ const TRANSLATIONS = {
     timeSig: '4/4 拍号',
     precision: '石英级精准计时',
     midi: 'MIDI 输入',
-    noChord: 'n.c.'
+    noChord: 'n.c.',
+    metronomeSound: '节拍器声音'
   }
 };
 
@@ -76,6 +78,7 @@ export default function App() {
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [isPrepMeasure, setIsPrepMeasure] = useState(false);
   const [midiEnabled, setMidiEnabled] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   
   const { detectedChord, chordRelation, chordColorClass, chordLedColor } = useMidi(midiEnabled, currentKey, theme);
   
@@ -90,6 +93,7 @@ export default function App() {
   const currentKeyRef = useRef(currentKey);
   const nextKeyRef = useRef(nextKey);
   const isPrepMeasureRef = useRef(false);
+  const isMutedRef = useRef(isMuted);
 
   const lookahead = 25.0;
   const scheduleAheadTime = 0.1;
@@ -102,6 +106,7 @@ export default function App() {
   useEffect(() => { keyCategoryRef.current = keyCategory; }, [keyCategory]);
   useEffect(() => { currentKeyRef.current = currentKey; }, [currentKey]);
   useEffect(() => { nextKeyRef.current = nextKey; }, [nextKey]);
+  useEffect(() => { isMutedRef.current = isMuted; }, [isMuted]);
 
   const getKeysByCategory = useCallback((cat: KeyCategory) => {
     if (cat === 'majors') return MAJORS;
@@ -183,7 +188,7 @@ export default function App() {
   };
 
   const scheduleNote = (beatNumber: number, time: number) => {
-    if (!audioContextRef.current) return;
+    if (!audioContextRef.current || isMutedRef.current) return;
 
     const osc = audioContextRef.current.createOscillator();
     const envelope = audioContextRef.current.createGain();
@@ -348,6 +353,20 @@ export default function App() {
                 {midiEnabled && <span className="hidden sm:inline text-[10px] font-mono font-bold uppercase tracking-wider">ON</span>}
               </button>
 
+              <button 
+                onClick={() => setIsMuted(!isMuted)}
+                className={`p-2 rounded-xl border transition-all duration-300 ${
+                  isMuted 
+                    ? 'bg-red-500/10 border-red-500/50 text-red-400' 
+                    : theme === 'dark' 
+                      ? 'bg-white/5 border-white/10 hover:bg-white/10 text-white/60' 
+                      : 'bg-slate-200 border-slate-300 hover:bg-slate-300 text-slate-600'
+                }`}
+                title={t.metronomeSound}
+              >
+                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
+
               {/* Theme Switcher */}
               <button 
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
@@ -466,7 +485,7 @@ export default function App() {
           
           {/* Next Key Indicator (Top Right) */}
           <div className="absolute top-4 sm:top-6 right-6 sm:right-8 text-right">
-            <p className={`text-[9px] sm:text-[10px] font-mono uppercase tracking-widest mb-0.5 sm:mb-1 transition-colors duration-500 ${
+            <p className={`text-[9px] sm:text-[10px] md:text-xs font-mono uppercase tracking-widest mb-0.5 sm:mb-1 transition-colors duration-500 ${
               theme === 'dark' ? 'text-white/30' : 'text-slate-400'
             }`}>{t.nextKey}</p>
             <AnimatePresence mode="wait">
@@ -484,7 +503,7 @@ export default function App() {
                   scale: { type: "spring", stiffness: 300, damping: 20 },
                   opacity: { duration: measuresToChange === 1 ? 0.1 : 0.2 }
                 }}
-                className="text-lg sm:text-xl font-bold origin-right"
+                className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold origin-right"
               >
                 {nextKey}
               </motion.p>
@@ -511,7 +530,7 @@ export default function App() {
                   </motion.span>
                 )}
                 <div className="relative">
-                  <span className={`text-[100px] sm:text-[180px] landscape:text-[110px] font-bold tracking-tighter leading-none transition-all duration-500 ${
+                  <span className={`text-[100px] sm:text-[180px] md:text-[220px] lg:text-[260px] xl:text-[300px] landscape:text-[110px] landscape:sm:text-[140px] landscape:md:text-[160px] font-bold tracking-tighter leading-none transition-all duration-500 ${
                     isPrepMeasure ? 'opacity-20' : 'opacity-100'
                   } ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                     {currentKey}
