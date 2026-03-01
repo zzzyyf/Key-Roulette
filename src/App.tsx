@@ -597,7 +597,11 @@ export default function App() {
                     : (theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'),
                   boxShadow: currentBeat === b ? `0 0 20px ${b === 1 ? 'rgba(16,185,129,0.5)' : (theme === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(15,23,42,0.2)')}` : 'none'
                 }}
-                className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-colors duration-75"
+                transition={{
+                  duration: currentBeat === b ? 0.02 : 0.15,
+                  ease: "easeOut"
+                }}
+                className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full"
               />
             ))}
           </div>
