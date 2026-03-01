@@ -66,7 +66,12 @@ export default function App() {
   const [nextKey, setNextKey] = useState('G');
   const [keyCategory, setKeyCategory] = useState<KeyCategory>('all');
   const [language, setLanguage] = useState<Language>('zh');
-  const [theme, setTheme] = useState<Theme>('dark');
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'light';
+  });
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [isPrepMeasure, setIsPrepMeasure] = useState(false);
@@ -299,7 +304,7 @@ export default function App() {
   const isLastMeasure = currentMeasure === measuresToChange && !isPrepMeasure;
 
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 transition-colors duration-500 ${
+    <div className={`min-h-screen flex flex-col items-center justify-start sm:justify-center p-4 sm:p-8 pt-6 sm:pt-8 transition-colors duration-500 ${
       theme === 'dark' ? 'bg-[#0a0a0a] text-white' : 'bg-[#f5f5f5] text-slate-900'
     }`}>
       <div className={`fixed inset-0 opacity-10 pointer-events-none transition-opacity duration-500`} 
@@ -310,109 +315,112 @@ export default function App() {
 
       <main className="relative z-10 w-full max-w-2xl">
         {/* Header Section */}
-        <div className={`flex items-center justify-between mb-12 border-b pb-6 transition-colors duration-500 ${
+        <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-12 landscape:mb-4 border-b pb-6 transition-colors duration-500 ${
           theme === 'dark' ? 'border-white/10' : 'border-slate-200'
         }`}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-emerald-500 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.3)] relative">
-              <Dices className="text-black w-6 h-6" />
-              <Music className="text-black w-3 h-3 absolute bottom-1 right-1" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-emerald-500 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.3)] relative shrink-0">
+              <Dices className="text-black w-5 h-5 sm:w-6 sm:h-6" />
+              <Music className="text-black w-2.5 h-2.5 sm:w-3 sm:h-3 absolute bottom-1 right-1" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight">{t.title}</h1>
-              <p className={`text-xs font-mono uppercase tracking-widest transition-colors duration-500 ${
+              <h1 className="text-lg sm:text-xl font-bold tracking-tight leading-tight">{t.title}</h1>
+              <p className={`text-[10px] font-mono uppercase tracking-widest transition-colors duration-500 ${
                 theme === 'dark' ? 'text-white/40' : 'text-slate-400'
               }`}>{t.subtitle}</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
-            {/* MIDI Switcher */}
-            <button 
-              onClick={() => setMidiEnabled(!midiEnabled)}
-              className={`p-2 rounded-xl border transition-all duration-300 flex items-center gap-2 ${
-                midiEnabled 
-                  ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400' 
-                  : theme === 'dark' 
-                    ? 'bg-white/5 border-white/10 hover:bg-white/10 text-white/60' 
-                    : 'bg-slate-200 border-slate-300 hover:bg-slate-300 text-slate-600'
-              }`}
-              title={t.midi}
-            >
-              <Piano className="w-4 h-4" />
-              {midiEnabled && <span className="text-[10px] font-mono font-bold uppercase tracking-wider">ON</span>}
-            </button>
-
-            {/* Theme Switcher */}
-            <button 
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className={`p-2 rounded-xl border transition-all duration-300 ${
-                theme === 'dark' 
-                  ? 'bg-white/5 border-white/10 hover:bg-white/10 text-white/60' 
-                  : 'bg-slate-200 border-slate-300 hover:bg-slate-300 text-slate-600'
-              }`}
-            >
-              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-
-            {/* Language Switcher */}
-            <div className="relative">
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
+            <div className="flex items-center gap-2">
               <button 
-                onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+                onClick={() => setMidiEnabled(!midiEnabled)}
+                className={`p-2 rounded-xl border transition-all duration-300 flex items-center gap-2 ${
+                  midiEnabled 
+                    ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400' 
+                    : theme === 'dark' 
+                      ? 'bg-white/5 border-white/10 hover:bg-white/10 text-white/60' 
+                      : 'bg-slate-200 border-slate-300 hover:bg-slate-300 text-slate-600'
+                }`}
+                title={t.midi}
+              >
+                <Piano className="w-4 h-4" />
+                {midiEnabled && <span className="hidden sm:inline text-[10px] font-mono font-bold uppercase tracking-wider">ON</span>}
+              </button>
+
+              {/* Theme Switcher */}
+              <button 
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                 className={`p-2 rounded-xl border transition-all duration-300 ${
                   theme === 'dark' 
                     ? 'bg-white/5 border-white/10 hover:bg-white/10 text-white/60' 
                     : 'bg-slate-200 border-slate-300 hover:bg-slate-300 text-slate-600'
                 }`}
               >
-                <Languages className="w-4 h-4" />
+                {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </button>
-              <AnimatePresence>
-                {isLangMenuOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className={`absolute right-0 mt-2 w-32 border rounded-xl overflow-hidden shadow-2xl z-50 transition-colors duration-500 ${
-                      theme === 'dark' ? 'bg-[#1a1a1a] border-white/10' : 'bg-white border-slate-200'
-                    }`}
-                  >
-                    {[
-                      { code: 'en', label: 'English' },
-                      { code: 'zh', label: '简体中文' }
-                    ].map((lang) => (
-                      <button
-                        key={lang.code}
-                        onClick={() => {
-                          setLanguage(lang.code as Language);
-                          setIsLangMenuOpen(false);
-                        }}
-                        className={`w-full text-left px-4 py-3 text-xs font-mono transition-colors ${
-                          language === lang.code 
-                            ? 'bg-emerald-500 text-black' 
-                            : theme === 'dark' ? 'hover:bg-white/5 text-white/80' : 'hover:bg-slate-50 text-slate-700'
-                        }`}
-                      >
-                        {lang.label}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+
+              {/* Language Switcher */}
+              <div className="relative">
+                <button 
+                  onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
+                  className={`p-2 rounded-xl border transition-all duration-300 ${
+                    theme === 'dark' 
+                      ? 'bg-white/5 border-white/10 hover:bg-white/10 text-white/60' 
+                      : 'bg-slate-200 border-slate-300 hover:bg-slate-300 text-slate-600'
+                  }`}
+                >
+                  <Languages className="w-4 h-4" />
+                </button>
+                <AnimatePresence>
+                  {isLangMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className={`absolute right-0 mt-2 w-32 border rounded-xl overflow-hidden shadow-2xl z-50 transition-colors duration-500 ${
+                        theme === 'dark' ? 'bg-[#1a1a1a] border-white/10' : 'bg-white border-slate-200'
+                      }`}
+                    >
+                      {[
+                        { code: 'en', label: 'English' },
+                        { code: 'zh', label: '简体中文' }
+                      ].map((lang) => (
+                        <button
+                          key={lang.code}
+                          onClick={() => {
+                            setLanguage(lang.code as Language);
+                            setIsLangMenuOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-3 text-xs font-mono transition-colors ${
+                            language === lang.code 
+                              ? 'bg-emerald-500 text-black' 
+                              : theme === 'dark' ? 'hover:bg-white/5 text-white/80' : 'hover:bg-slate-50 text-slate-700'
+                          }`}
+                        >
+                          {lang.label}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
 
             {/* Category Menu */}
             <div className="relative">
               <button 
                 onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 text-sm font-mono uppercase tracking-wider ${
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl border transition-all duration-300 text-xs sm:text-sm font-mono uppercase tracking-wider ${
                   theme === 'dark' 
                     ? 'bg-white/5 border-white/10 hover:bg-white/10 text-white/80' 
                     : 'bg-slate-200 border-slate-300 hover:bg-slate-300 text-slate-700'
                 }`}
               >
-                {keyCategory === 'all' ? t.all : t[keyCategory]}
-                <ChevronDown className={`w-4 h-4 transition-transform ${isCategoryMenuOpen ? 'rotate-180' : ''}`} />
+                <span className="max-w-[80px] sm:max-w-none truncate">
+                  {keyCategory === 'all' ? t.all : t[keyCategory]}
+                </span>
+                <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform shrink-0 ${isCategoryMenuOpen ? 'rotate-180' : ''}`} />
               </button>
               
               <AnimatePresence>
@@ -449,16 +457,16 @@ export default function App() {
         </div>
 
         {/* Central Key Display */}
-        <div className={`relative aspect-square sm:aspect-video flex flex-col items-center justify-center mb-12 rounded-3xl border overflow-hidden shadow-2xl group transition-all duration-500 ${
-          theme === 'dark' ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'
+        <div className={`relative w-full aspect-square sm:aspect-video landscape:h-[60vh] landscape:min-h-[320px] flex flex-col items-center justify-center mb-6 sm:mb-12 landscape:mb-6 rounded-3xl border overflow-hidden group transition-all duration-500 ${
+          theme === 'dark' ? 'bg-white/5 border-white/10 shadow-2xl' : 'bg-white border-slate-200 shadow-none'
         }`}>
           <div className={`absolute inset-0 bg-gradient-to-b from-transparent transition-colors duration-500 ${
             theme === 'dark' ? 'to-black/20' : 'to-slate-100/50'
           }`} />
           
           {/* Next Key Indicator (Top Right) */}
-          <div className="absolute top-6 right-8 text-right">
-            <p className={`text-[10px] font-mono uppercase tracking-widest mb-1 transition-colors duration-500 ${
+          <div className="absolute top-4 sm:top-6 right-6 sm:right-8 text-right">
+            <p className={`text-[9px] sm:text-[10px] font-mono uppercase tracking-widest mb-0.5 sm:mb-1 transition-colors duration-500 ${
               theme === 'dark' ? 'text-white/30' : 'text-slate-400'
             }`}>{t.nextKey}</p>
             <AnimatePresence mode="wait">
@@ -468,87 +476,89 @@ export default function App() {
                 animate={{ 
                   opacity: 1, 
                   x: 0,
-                  scale: isLastMeasure ? 1.5 : 1,
+                  scale: isLastMeasure ? 1.4 : 1,
                   color: isLastMeasure ? '#10b981' : (theme === 'dark' ? 'rgba(16, 185, 129, 0.8)' : 'rgba(16, 185, 129, 1)')
                 }}
                 exit={{ opacity: 0, x: -10 }}
                 transition={{ 
                   scale: { type: "spring", stiffness: 300, damping: 20 },
-                  opacity: { duration: 0.2 }
+                  opacity: { duration: measuresToChange === 1 ? 0.1 : 0.2 }
                 }}
-                className="text-xl font-bold origin-right"
+                className="text-lg sm:text-xl font-bold origin-right"
               >
                 {nextKey}
               </motion.p>
             </AnimatePresence>
           </div>
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={isPrepMeasure ? 'prep-' + currentKey : currentKey}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-              className="relative z-10 flex flex-col items-center justify-center select-none mb-4"
-            >
-              {isPrepMeasure && (
-                <motion.span 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="absolute -top-12 text-emerald-500 text-xs font-mono font-bold uppercase tracking-[0.5em] whitespace-nowrap"
-                >
-                  {t.preparing}
-                </motion.span>
-              )}
-              <div className="relative">
-                <span className={`text-[120px] sm:text-[180px] font-bold tracking-tighter leading-none transition-all duration-500 ${
-                  isPrepMeasure ? 'opacity-20' : 'opacity-100'
-                } ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                  {currentKey}
-                </span>
-                
-                {/* MIDI Status LED (Top Right of Text) */}
-                {midiEnabled && (
-                  <div className="absolute -top-2 -right-6 sm:-right-8">
-                    <motion.div
-                      animate={{ 
-                        backgroundColor: chordLedColor,
-                        boxShadow: chordRelation !== 'none' ? `0 0 15px ${chordLedColor}` : 'none',
-                        scale: chordRelation !== 'none' ? [1, 1.2, 1] : 1
-                      }}
-                      transition={{ 
-                        scale: { repeat: chordRelation !== 'none' ? Infinity : 0, duration: 2 }
-                      }}
-                      className="w-4 h-4 rounded-full border border-white/10"
-                    />
-                  </div>
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={isPrepMeasure ? 'prep-' + currentKey : currentKey}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: measuresToChange === 1 ? 0.1 : 0.2 }}
+                className="relative z-10 flex flex-col items-center justify-center select-none landscape:-translate-y-6"
+              >
+                {isPrepMeasure && (
+                  <motion.span 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute -top-10 sm:-top-12 text-emerald-500 text-[10px] sm:text-xs font-mono font-bold uppercase tracking-[0.4em] sm:tracking-[0.5em] whitespace-nowrap"
+                  >
+                    {t.preparing}
+                  </motion.span>
                 )}
-              </div>
-            </motion.div>
-          </AnimatePresence>
+                <div className="relative">
+                  <span className={`text-[100px] sm:text-[180px] landscape:text-[110px] font-bold tracking-tighter leading-none transition-all duration-500 ${
+                    isPrepMeasure ? 'opacity-20' : 'opacity-100'
+                  } ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                    {currentKey}
+                  </span>
+                  
+                  {/* MIDI Status LED (Top Right of Text) */}
+                  {midiEnabled && (
+                    <div className="absolute -top-1 -right-4 sm:-right-8">
+                      <motion.div
+                        animate={{ 
+                          backgroundColor: chordLedColor,
+                          boxShadow: chordRelation !== 'none' ? `0 0 15px ${chordLedColor}` : 'none',
+                          scale: chordRelation !== 'none' ? [1, 1.2, 1] : 1
+                        }}
+                        transition={{ 
+                          scale: { repeat: chordRelation !== 'none' ? Infinity : 0, duration: 2 }
+                        }}
+                        className="w-3 h-3 sm:w-4 sm:h-4 rounded-full border border-white/10"
+                      />
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
           {/* Relocated Measure Display (Bottom Center) */}
-          <div className="absolute bottom-16 flex flex-col items-center gap-1 pt-8">
-            <p className={`text-[10px] font-mono uppercase tracking-[0.3em] transition-colors duration-500 ${
+          <div className="absolute bottom-14 sm:bottom-16 landscape:bottom-14 flex flex-col items-center gap-0.5 sm:gap-1 pt-4 sm:pt-8">
+            <p className={`text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.2em] sm:tracking-[0.3em] transition-colors duration-500 ${
               theme === 'dark' ? 'text-white/30' : 'text-slate-400'
             }`}>{t.measure}</p>
             <div className="flex items-baseline gap-1">
-              <span className={`text-2xl font-mono font-bold transition-colors duration-500 ${
+              <span className={`text-xl sm:text-2xl font-mono font-bold transition-colors duration-500 ${
                 isPrepMeasure ? 'text-emerald-500' : (theme === 'dark' ? 'text-white/90' : 'text-slate-800')
               }`}>
                 {isPrepMeasure ? '0' : currentMeasure}
               </span>
-              <span className={`text-sm font-mono transition-colors duration-500 ${
+              <span className={`text-xs sm:text-sm font-mono transition-colors duration-500 ${
                 theme === 'dark' ? 'text-white/20' : 'text-slate-300'
               }`}>/</span>
-              <span className={`text-sm font-mono transition-colors duration-500 ${
+              <span className={`text-xs sm:text-sm font-mono transition-colors duration-500 ${
                 theme === 'dark' ? 'text-white/40' : 'text-slate-400'
               }`}>{measuresToChange}</span>
             </div>
           </div>
 
-          <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-4 px-8">
+          <div className="absolute bottom-6 sm:bottom-8 landscape:bottom-8 left-0 right-0 flex justify-center gap-3 sm:gap-4 px-8">
             {[1, 2, 3, 4].map((b) => (
               <motion.div
                 key={b}
@@ -559,14 +569,14 @@ export default function App() {
                     : (theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'),
                   boxShadow: currentBeat === b ? `0 0 20px ${b === 1 ? 'rgba(16,185,129,0.5)' : (theme === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(15,23,42,0.2)')}` : 'none'
                 }}
-                className="w-3 h-3 rounded-full transition-colors duration-75"
+                className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-colors duration-75"
               />
             ))}
           </div>
 
           {/* MIDI Chord Display */}
           {midiEnabled && (
-            <div className="absolute bottom-6 right-8 text-right">
+            <div className="absolute bottom-4 sm:bottom-6 right-6 sm:right-8 text-right">
               <AnimatePresence mode="wait">
                 {detectedChord && (
                   <motion.div
@@ -576,7 +586,7 @@ export default function App() {
                     exit={{ opacity: 0, y: -5 }}
                     className="flex flex-col items-end"
                   >
-                    <span className={`text-2xl font-mono font-bold tracking-tight ${chordColorClass}`}>
+                    <span className={`text-xl sm:text-2xl font-mono font-bold tracking-tight ${chordColorClass}`}>
                       {detectedChord === 'n.c.' ? t.noChord : detectedChord}
                     </span>
                   </motion.div>
@@ -674,10 +684,10 @@ export default function App() {
         </div>
 
         {/* Playback Controls */}
-        <div className="mt-8 flex items-start gap-4">
+        <div className="mt-8 flex flex-wrap sm:flex-nowrap items-start gap-3 sm:gap-4">
           <button
             onClick={togglePlay}
-            className={`flex-1 h-16 rounded-2xl flex items-center justify-center gap-3 font-bold text-lg transition-all active:scale-95 ${
+            className={`flex-[2] sm:flex-1 h-16 rounded-2xl flex items-center justify-center gap-3 font-bold text-lg transition-all active:scale-95 ${
               isPlaying 
                 ? (theme === 'dark' ? 'bg-white text-black hover:bg-white/90' : 'bg-slate-800 text-white hover:bg-slate-700')
                 : 'bg-emerald-500 text-black hover:bg-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.2)]'
@@ -696,24 +706,24 @@ export default function App() {
             )}
           </button>
           
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-1 sm:flex-none flex-col items-center gap-2">
             <button
               onClick={reset}
-              className={`w-16 h-16 rounded-2xl border flex items-center justify-center transition-all active:rotate-180 duration-500 ${
+              className={`w-full sm:w-16 h-16 rounded-2xl border flex items-center justify-center transition-all active:rotate-180 duration-500 ${
                 theme === 'dark' ? 'bg-white/5 border-white/10 hover:bg-white/10 text-white/60' : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-500'
               }`}
             >
               <RotateCcw className="w-6 h-6" />
             </button>
-            <span className={`text-[10px] font-mono uppercase tracking-widest transition-colors duration-500 ${
+            <span className={`text-[9px] sm:text-[10px] font-mono uppercase tracking-widest transition-colors duration-500 ${
               theme === 'dark' ? 'text-white/30' : 'text-slate-400'
             }`}>{t.reset}</span>
           </div>
           
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-1 sm:flex-none flex-col items-center gap-2">
             <button 
               onClick={() => setUsePrepBar(!usePrepBar)}
-              className={`w-16 h-16 rounded-2xl border transition-all flex items-center justify-center ${
+              className={`w-full sm:w-16 h-16 rounded-2xl border transition-all flex items-center justify-center ${
                 usePrepBar 
                   ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400' 
                   : theme === 'dark' ? 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10' : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'
@@ -723,14 +733,14 @@ export default function App() {
                 {usePrepBar && <Check className="w-3 h-3 text-black" />}
               </div>
             </button>
-            <span className={`text-[10px] font-mono uppercase tracking-widest transition-colors duration-500 ${
+            <span className={`text-[9px] sm:text-[10px] font-mono uppercase tracking-widest transition-colors duration-500 ${
               theme === 'dark' ? 'text-white/30' : 'text-slate-400'
             }`}>{t.prepBar}</span>
           </div>
         </div>
 
         {/* Footer Info */}
-        <div className={`mt-12 flex items-center justify-between text-[10px] font-mono uppercase tracking-[0.2em] transition-colors duration-500 ${
+        <div className={`mt-12 flex flex-col sm:flex-row items-center justify-between gap-4 text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.2em] transition-colors duration-500 ${
           theme === 'dark' ? 'text-white/20' : 'text-slate-300'
         }`}>
           <div className="flex items-center gap-2">
