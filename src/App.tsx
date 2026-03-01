@@ -488,37 +488,46 @@ export default function App() {
             <p className={`text-[9px] sm:text-[10px] md:text-xs font-mono uppercase tracking-widest mb-0.5 sm:mb-1 transition-colors duration-500 ${
               theme === 'dark' ? 'text-white/30' : 'text-slate-400'
             }`}>{t.nextKey}</p>
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={nextKey}
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ 
-                  opacity: 1, 
-                  x: 0,
-                  scale: isLastMeasure ? 1.4 : 1,
-                  color: isLastMeasure ? '#10b981' : (theme === 'dark' ? 'rgba(16, 185, 129, 0.8)' : 'rgba(16, 185, 129, 1)')
-                }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={{ 
-                  scale: { type: "spring", stiffness: 300, damping: 20 },
-                  opacity: { duration: measuresToChange === 1 ? 0.1 : 0.2 }
-                }}
-                className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold origin-right"
-              >
-                {nextKey}
-              </motion.p>
-            </AnimatePresence>
+            <div className="relative h-8 sm:h-10 flex items-center justify-end">
+              <AnimatePresence>
+                <motion.p
+                  key={nextKey}
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ 
+                    opacity: 1, 
+                    x: 0,
+                    scale: isLastMeasure ? 1.4 : 1,
+                    color: isLastMeasure ? '#10b981' : (theme === 'dark' ? 'rgba(16, 185, 129, 0.8)' : 'rgba(16, 185, 129, 1)')
+                  }}
+                  exit={{ 
+                    opacity: 0, 
+                    x: -10,
+                    transition: { duration: measuresToChange === 1 ? 0.05 : 0.1 }
+                  }}
+                  transition={{ 
+                    duration: measuresToChange === 1 ? 0.1 : 0.2
+                  }}
+                  className="absolute text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold origin-right whitespace-nowrap"
+                >
+                  {nextKey}
+                </motion.p>
+              </AnimatePresence>
+            </div>
           </div>
 
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
               <motion.div
                 key={isPrepMeasure ? 'prep-' + currentKey : currentKey}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
+                exit={{ 
+                  opacity: 0, 
+                  x: -20,
+                  transition: { duration: measuresToChange === 1 ? 0.05 : 0.1 }
+                }}
                 transition={{ duration: measuresToChange === 1 ? 0.1 : 0.2 }}
-                className="relative z-10 flex flex-col items-center justify-center select-none landscape:-translate-y-6"
+                className="absolute z-10 flex flex-col items-center justify-center select-none landscape:-translate-y-6"
               >
                 {isPrepMeasure && (
                   <motion.span 
@@ -665,9 +674,7 @@ export default function App() {
               <span className={`text-xs font-mono uppercase tracking-wider transition-colors duration-500 ${
                 theme === 'dark' ? 'text-white/40' : 'text-slate-400'
               }`}>{t.changeEvery}</span>
-              <span className={`text-2xl font-mono font-bold transition-colors duration-500 ${
-                theme === 'dark' ? 'text-white/80' : 'text-slate-800'
-              }`}>{measuresToChange} <span className={`text-xs transition-colors duration-500 ${
+              <span className="text-2xl font-mono font-bold text-emerald-500">{measuresToChange} <span className={`text-xs transition-colors duration-500 ${
                 theme === 'dark' ? 'text-white/30' : 'text-slate-400'
               }`}>{t.meas}</span></span>
             </div>
@@ -686,8 +693,8 @@ export default function App() {
                 max="16" 
                 value={measuresToChange} 
                 onChange={(e) => setMeasuresToChange(parseInt(e.target.value))}
-                className={`flex-1 h-1.5 rounded-lg appearance-none cursor-pointer transition-colors duration-500 ${
-                  theme === 'dark' ? 'accent-white/40 bg-white/10' : 'accent-slate-400 bg-slate-200'
+                className={`flex-1 accent-emerald-500 h-1.5 rounded-lg appearance-none cursor-pointer transition-colors duration-500 ${
+                  theme === 'dark' ? 'bg-white/10' : 'bg-slate-200'
                 }`}
               />
               <button 
