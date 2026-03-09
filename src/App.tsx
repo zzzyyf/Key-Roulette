@@ -6,6 +6,31 @@ import { useMidi } from './hooks/useMidi';
 const MAJORS = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
 const MINORS = ['Cm', 'C#m', 'Dm', 'Ebm', 'Em', 'Fm', 'F#m', 'Gm', 'Abm', 'Am', 'Bbm', 'Bm'];
 
+const ENHARMONIC_MAP: Record<string, string> = {
+  'C#': 'Db', 'Db': 'C#',
+  'Eb': 'D#', 'D#': 'Eb',
+  'F#': 'Gb', 'Gb': 'F#',
+  'Ab': 'G#', 'G#': 'Ab',
+  'Bb': 'A#', 'A#': 'Bb',
+  'C#m': 'Dbm', 'Dbm': 'C#m',
+  'Ebm': 'D#m', 'D#m': 'Ebm',
+  'F#m': 'Gbm', 'Gbm': 'F#m',
+  'Abm': 'G#m', 'G#m': 'Abm',
+  'Bbm': 'A#m', 'A#m': 'Bbm',
+};
+
+const normalizeKey = (key: string) => {
+  const isMinor = key.endsWith('m');
+  const root = isMinor ? key.slice(0, -1) : key;
+  const normalizedRoot = 
+    root === 'Db' ? 'C#' :
+    root === 'D#' ? 'Eb' :
+    root === 'Gb' ? 'F#' :
+    root === 'G#' ? 'Ab' :
+    root === 'A#' ? 'Bb' : root;
+  return normalizedRoot + (isMinor ? 'm' : '');
+};
+
 type KeyCategory = 'all' | 'majors' | 'minors';
 type Language = 'en' | 'zh';
 type Theme = 'light' | 'dark';
@@ -31,7 +56,8 @@ const TRANSLATIONS = {
     precision: 'Precision Quartz Timing',
     midi: 'MIDI Input',
     noChord: 'n.c.',
-    metronomeSound: 'Metronome Sound'
+    metronomeSound: 'Metronome Sound',
+    randomEnharmonic: 'Random Enharmonic'
   },
   zh: {
     title: '轮盘调',
@@ -53,7 +79,8 @@ const TRANSLATIONS = {
     precision: '石英级精准计时',
     midi: 'MIDI 输入',
     noChord: 'n.c.',
-    metronomeSound: '节拍器声音'
+    metronomeSound: '节拍器声音',
+    randomEnharmonic: '随机等音显示'
   }
 };
 
@@ -79,8 +106,9 @@ export default function App() {
   const [isPrepMeasure, setIsPrepMeasure] = useState(false);
   const [midiEnabled, setMidiEnabled] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [randomEnharmonic, setRandomEnharmonic] = useState(false);
   
-  const { detectedChord, chordRelation, chordColorClass, chordLedColor } = useMidi(midiEnabled, currentKey, theme);
+  const { detectedChord, chordRelation, chordColorClass, chordLedColor } = useMidi(midiEnabled, normalizeKey(currentKey), theme);
   
   const audioContextRef = useRef<AudioContext | null>(null);
   const timerIDRef = useRef<number | null>(null);
@@ -94,6 +122,7 @@ export default function App() {
   const nextKeyRef = useRef(nextKey);
   const isPrepMeasureRef = useRef(false);
   const isMutedRef = useRef(isMuted);
+  const randomEnharmonicRef = useRef(randomEnharmonic);
 
   const lookahead = 25.0;
   const scheduleAheadTime = 0.1;
@@ -107,6 +136,7 @@ export default function App() {
   useEffect(() => { currentKeyRef.current = currentKey; }, [currentKey]);
   useEffect(() => { nextKeyRef.current = nextKey; }, [nextKey]);
   useEffect(() => { isMutedRef.current = isMuted; }, [isMuted]);
+  useEffect(() => { randomEnharmonicRef.current = randomEnharmonic; }, [randomEnharmonic]);
 
   const getKeysByCategory = useCallback((cat: KeyCategory) => {
     if (cat === 'majors') return MAJORS;
@@ -116,8 +146,16 @@ export default function App() {
 
   const pickNewNextKey = useCallback((excludeKey: string, cat: KeyCategory) => {
     const keys = getKeysByCategory(cat);
-    const filtered = keys.filter(k => k !== excludeKey);
-    return filtered[Math.floor(Math.random() * filtered.length)];
+    const filtered = keys.filter(k => normalizeKey(k) !== normalizeKey(excludeKey));
+    let picked = filtered[Math.floor(Math.random() * filtered.length)];
+    
+    if (randomEnharmonicRef.current && ENHARMONIC_MAP[picked]) {
+      if (Math.random() > 0.5) {
+        picked = ENHARMONIC_MAP[picked];
+      }
+    }
+    
+    return picked;
   }, [getKeysByCategory]);
 
   const rotateKey = useCallback(() => {
@@ -365,6 +403,20 @@ export default function App() {
                 title={t.metronomeSound}
               >
                 {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
+
+              <button 
+                onClick={() => setRandomEnharmonic(!randomEnharmonic)}
+                className={`p-2 rounded-xl border transition-all duration-300 ${
+                  randomEnharmonic 
+                    ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400' 
+                    : theme === 'dark' 
+                      ? 'bg-white/5 border-white/10 hover:bg-white/10 text-white/60' 
+                      : 'bg-slate-200 border-slate-300 hover:bg-slate-300 text-slate-600'
+                }`}
+                title={t.randomEnharmonic}
+              >
+                <Dices className={`w-4 h-4 ${randomEnharmonic ? 'animate-pulse' : ''}`} />
               </button>
 
               {/* Theme Switcher */}
