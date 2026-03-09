@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Play, Pause, RotateCcw, Plus, Minus, Settings2, Dices, Music, ChevronDown, Check, Languages, Sun, Moon, Piano, Volume2, VolumeX } from 'lucide-react';
+import Cookies from 'js-cookie';
 import { useMidi } from './hooks/useMidi';
 
 const MAJORS = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
@@ -30,6 +31,8 @@ const normalizeKey = (key: string) => {
     root === 'A#' ? 'Bb' : root;
   return normalizedRoot + (isMinor ? 'm' : '');
 };
+
+const SETTINGS_COOKIE_KEY = 'key-roulette-settings';
 
 type KeyCategory = 'all' | 'majors' | 'minors';
 type Language = 'en' | 'zh';
@@ -85,17 +88,21 @@ const TRANSLATIONS = {
 };
 
 export default function App() {
-  const [bpm, setBpm] = useState(120);
+  const savedSettings = Cookies.get(SETTINGS_COOKIE_KEY);
+  const initialSettings = savedSettings ? JSON.parse(savedSettings) : {};
+
+  const [bpm, setBpm] = useState(initialSettings.bpm ?? 120);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [measuresToChange, setMeasuresToChange] = useState(4);
-  const [usePrepBar, setUsePrepBar] = useState(true);
+  const [measuresToChange, setMeasuresToChange] = useState(initialSettings.measuresToChange ?? 4);
+  const [usePrepBar, setUsePrepBar] = useState(initialSettings.usePrepBar ?? true);
   const [currentBeat, setCurrentBeat] = useState(0);
   const [currentMeasure, setCurrentMeasure] = useState(1);
   const [currentKey, setCurrentKey] = useState('C');
   const [nextKey, setNextKey] = useState('G');
-  const [keyCategory, setKeyCategory] = useState<KeyCategory>('all');
-  const [language, setLanguage] = useState<Language>('zh');
+  const [keyCategory, setKeyCategory] = useState<KeyCategory>(initialSettings.keyCategory ?? 'all');
+  const [language, setLanguage] = useState<Language>(initialSettings.language ?? 'zh');
   const [theme, setTheme] = useState<Theme>(() => {
+    if (initialSettings.theme) return initialSettings.theme;
     if (typeof window !== 'undefined' && window.matchMedia) {
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
@@ -104,10 +111,26 @@ export default function App() {
   const [isCategoryMenuOpen, setIsCategoryMenuOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [isPrepMeasure, setIsPrepMeasure] = useState(false);
-  const [midiEnabled, setMidiEnabled] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [randomEnharmonic, setRandomEnharmonic] = useState(false);
+  const [midiEnabled, setMidiEnabled] = useState(initialSettings.midiEnabled ?? false);
+  const [isMuted, setIsMuted] = useState(initialSettings.isMuted ?? false);
+  const [randomEnharmonic, setRandomEnharmonic] = useState(initialSettings.randomEnharmonic ?? false);
   
+  // Persistence Effect
+  useEffect(() => {
+    const settings = {
+      bpm,
+      measuresToChange,
+      usePrepBar,
+      keyCategory,
+      language,
+      theme,
+      midiEnabled,
+      isMuted,
+      randomEnharmonic
+    };
+    Cookies.set(SETTINGS_COOKIE_KEY, JSON.stringify(settings), { expires: 365, sameSite: 'lax' });
+  }, [bpm, measuresToChange, usePrepBar, keyCategory, language, theme, midiEnabled, isMuted, randomEnharmonic]);
+
   const { detectedChord, chordRelation, chordColorClass, chordLedColor } = useMidi(midiEnabled, normalizeKey(currentKey), theme);
   
   const audioContextRef = useRef<AudioContext | null>(null);
